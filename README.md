@@ -91,7 +91,7 @@ For full details on topics, maturity labels, and pinning strategy, see [docs/org
 
 ## Maturity labels
 
-All Repositories should be labelled with one of the following GitHub topics:
+All Repositories should be labeled with one of the following GitHub topics:
 
 | Topic | Meaning |
 |---|---|
