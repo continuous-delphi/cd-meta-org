@@ -1,10 +1,10 @@
-# Continuous Delphi - Start Here
+# Continuous Delphi
 
-Continuous Delphi is a practical modernization toolkit for teams maintaining long-lived Delphi systems.
+`Continuous Delphi` is a practical modernization toolkit for teams maintaining long-lived Delphi systems.
 
 It prioritizes disciplined, incremental modernization over risky rewrites and is intentionally structured to remain navigable as it scales.
 
-Repositories listed below may not yet exist. This document defines the architectural blueprint of the organization and will evolve as the ecosystem grows.
+Most repositories below are planned and may not yet exist. This document defines the architectural blueprint of the organization and will evolve as the ecosystem grows.
 
 ## How to use this organization
 
@@ -26,8 +26,8 @@ Standards and conventions repositories provide templates and shared configuratio
 - `cd-std-editorconfig`
 
 CI and DevOps repositories provide toolchains, actions, and pipeline templates:
+- [cd-ci-toolchain](https://github.com/continuous-delphi/cd-ci-toolchain) - Delphi toolchain discovery and CI integration.
 - `cd-ci-examples`
-- `cd-ci-toolchain`
 - `cd-ci-setup-delphi`
 - `cd-ci-build-delphi`
 - `cd-ci-run-dunitx`
@@ -49,6 +49,7 @@ Reference implementation repositories demonstrate patterns and architecture:
 - `cd-ref-layered-monolith`
 
 Specification repositories provide formal schemas and layout definitions:
+- [cd-spec-delphi-compiler-versions](https://github.com/continuous-delphi/cd-spec-delphi-compiler-versions) - Canonical Delphi VER### mapping data (Delphi 2+) with aliases and toolchain metadata.
 - `cd-spec-project-layout`
 - `cd-spec-build-metadata`
 
@@ -90,7 +91,7 @@ For full details on topics, maturity labels, and pinning strategy, see [docs/org
 
 ## Maturity labels
 
-Repositories are labelled via GitHub topics:
+All Repositories should be labelled with one of the following GitHub topics:
 
 | Topic | Meaning |
 |---|---|
