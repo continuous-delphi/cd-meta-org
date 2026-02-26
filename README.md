@@ -15,6 +15,7 @@ Most repositories below are planned and may not yet exist. This document defines
 ## Quick Links
 
 Documentation and guidance repositories provide long-form guides and playbooks:
+- [cd-doc-dev-setup](https://github.com/continuous-delphi/cd-doc-dev-setup) - Development environment setup guides for the Continuous Delphi organization.
 - `cd-doc-playbook`
 - `cd-doc-modernization-patterns`
 - `cd-doc-ci-guide`
