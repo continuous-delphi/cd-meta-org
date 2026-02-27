@@ -2,42 +2,42 @@
 
 param(
   [Parameter(Mandatory)]
-  [string] $Owner,                     # continuous-delphi
+  [string] $Owner,                      # continuous-delphi
 
   [Parameter(Mandatory)]
-  [int]    $ProjectNumber,             # 1
+  [int]    $ProjectNumber,              # 1
 
   [Parameter(Mandatory)]
-  [string] $Repo,                      # cd-meta-org (or any repo under the org)
+  [string] $Repo,                       # cd-meta-org (or any repo under the org)
 
   [Parameter(Mandatory)]
-  [string] $Title,                     # "CD-M02 - ..."
+  [string] $Title,                      # "CD-M02 - ..."
 
   [Parameter()]
   [string] $Body = '',
 
   [Parameter(Mandatory)]
-  [string] $CdMilestone,               # "CD-M01"
+  [string] $CdMilestone,                # "CD-M01"
 
   [Parameter(Mandatory)]
-  [string] $CdArea,                    # "Governance" (must match option name)
+  [string] $CdArea,                     # must match option name exactly
 
   [Parameter(Mandatory)]
-  [string] $CdPriority,                # "Strategic" (must match option name)
+  [string] $CdPriority,                 # must match option name exactly
 
   [Parameter()]
   [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
-  [string] $StartDate,                 # "2026-02-27"
+  [string] $StartDate,                  # "2026-02-27"
 
   [Parameter()]
   [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
-  [string] $TargetDate,                # "2026-03-31"
+  [string] $TargetDate,                 # "2026-03-31"
 
   [Parameter()]
-  [string] $QuarterTitle = 'Quarter 1', # iteration title in Quarter field
+  [string] $QuarterTitle = 'Quarter 1',  # must match iteration title exactly
 
   [Parameter()]
-  [string] $StatusName = 'Todo'         # "Todo", "In progress", "Done"
+  [string] $StatusName = 'Todo'          # must match Status option exactly
 )
 
 Set-StrictMode -Version Latest
@@ -49,10 +49,14 @@ function Assert-Gh {
 
 function Invoke-GhJson {
   param(
-    [Parameter(Mandatory)][string[]] $Args
+    [Parameter(Mandatory)][string[]] $GhArgs
   )
-  $out = & gh @Args
-  if ([string]::IsNullOrWhiteSpace($out)) { throw "gh returned no output for: gh $($Args -join ' ')" }
+
+  $out = & gh @GhArgs
+  if ([string]::IsNullOrWhiteSpace($out)) {
+    throw "gh returned no output for: gh $($GhArgs -join ' ')"
+  }
+
   return ($out | ConvertFrom-Json)
 }
 
@@ -62,8 +66,30 @@ function Invoke-GhGraphQL {
     [Parameter()][hashtable] $Variables = @{}
   )
 
-  $varsJson = ($Variables | ConvertTo-Json -Compress -Depth 12)
-  return Invoke-GhJson -Args @('api', 'graphql', '-f', "query=$Query", '-f', "variables=$varsJson")
+  # NOTE:
+  # gh api graphql expects variables to be passed as individual flags (not a JSON string):
+  # -f for strings, -F for non-strings (ints, bools, etc).
+  # Example:
+  #   gh api graphql -f query='query($login:String!, $number:Int!){...}' -f login=foo -F number=1
+  $ghArgs = @('api', 'graphql', '-f', "query=$Query")
+
+  foreach ($k in $Variables.Keys) {
+    $v = $Variables[$k]
+
+    if ($null -eq $v) {
+      continue
+    }
+
+    if ($v -is [int] -or $v -is [long] -or $v -is [double] -or $v -is [bool]) {
+      $ghArgs += @('-F', "$k=$v")
+    }
+    else {
+      # Treat everything else as a string
+      $ghArgs += @('-f', "$k=$v")
+    }
+  }
+
+  return Invoke-GhJson -GhArgs $ghArgs
 }
 
 function New-RepoIssue {
@@ -74,12 +100,12 @@ function New-RepoIssue {
     [Parameter()][string] $Body
   )
 
-  $args = @('api', '-X', 'POST', "repos/$Owner/$Repo/issues", '-f', "title=$Title")
+  $reqArgs = @('api', '-X', 'POST', "repos/$Owner/$Repo/issues", '-f', "title=$Title")
   if (-not [string]::IsNullOrWhiteSpace($Body)) {
-    $args += @('-f', "body=$Body")
+    $reqArgs += @('-f', "body=$Body")
   }
 
-  $resp = Invoke-GhJson -Args $args
+  $resp = Invoke-GhJson -GhArgs $reqArgs
   if (-not $resp.node_id) { throw "Issue creation succeeded but node_id was missing." }
 
   [pscustomobject]@{
@@ -245,13 +271,13 @@ $itemId = Add-IssueToProject -ProjectId $proj.id -ContentNodeId $issue.NodeId
 Write-Host "Added to project item: $itemId"
 
 # 4) Resolve fields
-$fStatus     = Get-FieldByName -Project $proj -Name 'Status'
-$fCdMilestone= Get-FieldByName -Project $proj -Name 'CD Milestone'
-$fCdArea     = Get-FieldByName -Project $proj -Name 'CD Area'
-$fCdPriority = Get-FieldByName -Project $proj -Name 'CD Priority'
-$fStart      = Get-FieldByName -Project $proj -Name 'Start Date'
-$fTarget     = Get-FieldByName -Project $proj -Name 'Target Date'
-$fQuarter    = Get-FieldByName -Project $proj -Name 'Quarter'
+$fStatus      = Get-FieldByName -Project $proj -Name 'Status'
+$fCdMilestone = Get-FieldByName -Project $proj -Name 'CD Milestone'
+$fCdArea      = Get-FieldByName -Project $proj -Name 'CD Area'
+$fCdPriority  = Get-FieldByName -Project $proj -Name 'CD Priority'
+$fStart       = Get-FieldByName -Project $proj -Name 'Start Date'
+$fTarget      = Get-FieldByName -Project $proj -Name 'Target Date'
+$fQuarter     = Get-FieldByName -Project $proj -Name 'Quarter'
 
 # 5) Set values
 
