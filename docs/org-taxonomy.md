@@ -185,6 +185,36 @@ Before creating a repository, confirm:
 - [ ] README links back to `cd-meta-org` under a "Part of Continuous Delphi" section.
 - [ ] Repository is under `cd-x-*` if it has no stable release tag or expects breaking changes.
 
+## Repository structure conventions
+
+### Root directory
+
+The root directory must remain navigable at a glance. Limit top-level
+entries to well-known categories. Avoid accumulating miscellaneous files
+directly in root as the repository matures.
+
+Expected root entries:
+
+- `.github/` -- CI workflows and GitHub-specific configuration
+- `.gitignore`
+- `.gitmodules` -- present only if the repository has submodules
+- `LICENSE`
+- `README.md`
+- `source/` -- all production source code
+- `submodules/` -- present only if the repository has submodules (see below)
+- `tests/` -- all test code, fixtures, and test runners
+
+### Submodules
+
+If a repository contains submodules, they must be located under a
+`submodules/` directory at the repo root. Submodules should not be placed
+directly in root. Why? Because the presence of `submodules/` serves as
+an explicit visual signal to contributors that the repository has external
+dependencies and its contents provide an immediate inventory of those
+dependencies (without having to parse the `.gitmodules` file)
+
+Try to limit the number of submodules to the minimum necessary.
+
 ## When a repository does not fit any domain
 
 If a repository does not clearly belong to an existing domain:
