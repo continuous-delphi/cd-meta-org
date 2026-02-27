@@ -28,7 +28,7 @@
   The GitHub organization login. Example: continuous-delphi
 
 .PARAMETER ProjectNumber
-  The ProjectV2 number (as shown in the GitHub UI). Example: 1"
+  The ProjectV2 number (as shown in the GitHub UI). Example: 1
 
 .PARAMETER Repo
   The repository name (without owner) where the issue will be created.
@@ -49,7 +49,7 @@
   creation. Issue Types must be enabled for the repository.
 
 .PARAMETER CdMilestone
-  The Continuous Delphi milestone identifier. Must match pattern CD-M## (2-4 digits). Example: CD-M05
+  The Continuous Delphi milestone identifier. Must match pattern CD-M## (2-4 digits).
   Example: CD-M05
 
 .PARAMETER CdArea
@@ -67,11 +67,17 @@
 
 .PARAMETER QuarterTitle
   The iteration title for the Quarter field. Must match the iteration name
-  exactly as configured in the project. Default: 'Quarter 1'
+  exactly as configured in the project. Defaults to the current calendar quarter
+  (e.g. 'Quarter 1' for January-March).
 
 .PARAMETER StatusName
   The initial status. Must be one of: Todo, In progress, Done.
   Default: Todo
+
+.PARAMETER DryRun
+  If specified, prints all parameters that would be used and exits without
+  making any changes. No issues are created, no project fields are set.
+  Use this to verify inputs before committing to a live run.
 
 .EXAMPLE
   ./cd-project-add-issue.ps1 `
@@ -90,9 +96,21 @@
     -QuarterTitle "Quarter 1" `
     -StatusName "Todo"
 
+.EXAMPLE
+  # Verify inputs without creating anything
+  ./cd-project-add-issue.ps1 `
+    -Owner continuous-delphi `
+    -ProjectNumber 1 `
+    -Repo cd-meta-org `
+    -Title "CD-M05: Specification and Reference" `
+    -CdMilestone "CD-M05" `
+    -CdArea "Specification" `
+    -CdPriority "Strategic" `
+    -DryRun
+
 .NOTES
   Part of cd-meta-org (Continuous Delphi organization).
-  Requires: gh CLI authenticated with repo and project write permissions. 
+  Requires: gh CLI authenticated with repo and project write permissions.
   gh auth refresh -s read:project,project
 #>
 
@@ -159,7 +177,12 @@ param(
 
   [Parameter()]
   [ValidateSet('Todo','In progress','Done')]
-  [string] $StatusName = 'Todo'          # must match Status option exactly
+  [string] $StatusName = 'Todo',        # must match Status option exactly
+
+  # Prints all parameters and exits without making any changes.
+  # Use to verify inputs before a live run.
+  [Parameter()]
+  [switch] $DryRun
 )
 
 Set-StrictMode -Version Latest
@@ -543,6 +566,31 @@ mutation($projectId:ID!, $itemId:ID!, $fieldId:ID!, $iterationId:String!) {
     fieldId      = $FieldId
     iterationId  = $IterationId
   }
+}
+
+# -----------------------------------------------------------------------
+# DryRun: print parameters and exit without making any changes
+# -----------------------------------------------------------------------
+if ($DryRun) {
+  Write-Host ""
+  Write-Host "DRY RUN -- no changes will be made." -ForegroundColor Cyan
+  Write-Host ""
+  Write-Host ("  {0,-14} {1}" -f "Owner:",         $Owner)
+  Write-Host ("  {0,-14} {1}" -f "ProjectNumber:", $ProjectNumber)
+  Write-Host ("  {0,-14} {1}" -f "Repo:",          $Repo)
+  Write-Host ("  {0,-14} {1}" -f "Title:",         $Title)
+  Write-Host ("  {0,-14} {1}" -f "Body:",          $(if ($Body) { $Body } else { '(none)' }))
+  Write-Host ("  {0,-14} {1}" -f "Labels:",        $(if ($Labels.Count -gt 0) { $Labels -join ', ' } else { '(none)' }))
+  Write-Host ("  {0,-14} {1}" -f "IssueType:",     $(if ($IssueType) { $IssueType } else { '(none)' }))
+  Write-Host ("  {0,-14} {1}" -f "CdMilestone:",   $CdMilestone)
+  Write-Host ("  {0,-14} {1}" -f "CdArea:",        $CdArea)
+  Write-Host ("  {0,-14} {1}" -f "CdPriority:",    $CdPriority)
+  Write-Host ("  {0,-14} {1}" -f "StartDate:",     $(if ($StartDate) { $StartDate } else { '(none)' }))
+  Write-Host ("  {0,-14} {1}" -f "TargetDate:",    $(if ($TargetDate) { $TargetDate } else { '(none)' }))
+  Write-Host ("  {0,-14} {1}" -f "QuarterTitle:",  $QuarterTitle)
+  Write-Host ("  {0,-14} {1}" -f "StatusName:",    $StatusName)
+  Write-Host ""
+  exit 0
 }
 
 Assert-Gh
