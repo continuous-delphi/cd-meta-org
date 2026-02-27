@@ -120,30 +120,6 @@ Example:
 [CI] Delphi toolchain discovery and MSBuild wrapper for deterministic CI builds.
 ```
 
-## Pinned repositories
-
-GitHub allows six pinned repositories. They serve as storefront navigation — a visitor must be
-able to orient themselves from the pinned set alone.
-
-Target pins (aspirational — adjust as repositories are created and adoption grows):
-
-1. `cd-meta-org` — Start here: navigation and index
-2. `cd-doc-playbook` — Main modernization guidance
-3. `cd-std-style-guide` — Standards entry point
-4. `cd-ci-examples` — Copy/paste workflows and matrices
-5. `cd-ci-toolchain` — CI engine
-6. One flagship `cd-ref-*` repository — Canonical reference implementation
-
-Revisit the pinned set as the ecosystem matures. For example, `cd-ci-setup-delphi` may warrant
-a pin once it becomes the primary CI entry point.
-
-## Navigation hub
-
-`cd-meta-org` is the central navigation hub for the organization. It contains a categorized index
-of repositories by domain, a "what should I use?" decision tree, a maturity legend, and links to
-standards and contribution documentation. Clarity takes priority over completeness — a reader
-must be able to locate the correct repository in under a minute.
-
 ## Archiving and deprecation
 
 Experimental work lives in `cd-x-*`. When a prototype is abandoned or superseded:
