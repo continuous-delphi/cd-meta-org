@@ -155,7 +155,7 @@ param(
   [string] $TargetDate,                 # "2026-03-31"
 
   [Parameter()]
-  [string] $QuarterTitle = 'Quarter 1',  # must match iteration title exactly
+  [string] $QuarterTitle = ("Quarter {0}" -f [math]::Ceiling((Get-Date).Month / 3)), # must match iteration title exactly
 
   [Parameter()]
   [ValidateSet('Todo','In progress','Done')]
@@ -358,7 +358,7 @@ query($login:String!, $number:Int!) {
     projectV2(number: $number) {
       id
       title
-      fields(first: 50) {
+      fields(first: 100) {
         nodes {
           __typename
           ... on ProjectV2FieldCommon { id name dataType }
