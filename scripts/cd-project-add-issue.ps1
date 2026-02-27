@@ -3,7 +3,7 @@
 <#
 .SYNOPSIS
   Creates a GitHub issue and adds it to a ProjectV2 board with all fields set
-  
+
 .DESCRIPTION
   Creates a new issue in the specified repository, optionally assigns labels
   and an issue type, then adds the issue to the given GitHub ProjectV2 board
@@ -79,6 +79,9 @@
   making any changes. No issues are created, no project fields are set.
   Use this to verify inputs before committing to a live run.
 
+.PARAMETER Version
+  Prints the script version and exits.
+
 .EXAMPLE
   ./cd-project-add-issue.ps1 `
     -Owner continuous-delphi `
@@ -108,6 +111,10 @@
     -CdPriority "Strategic" `
     -DryRun
 
+.EXAMPLE
+  # Print script version
+  ./cd-project-add-issue.ps1 -Version
+
 .NOTES
   Part of cd-meta-org (Continuous Delphi organization).
   Requires: gh CLI authenticated with repo and project write permissions.
@@ -115,6 +122,12 @@
 #>
 
 param(
+  [Parameter(Mandatory=$false)]
+  [switch] $Version,
+
+  [Parameter(Mandatory=$false)]
+  [switch] $DryRun,
+
   [Parameter(Mandatory)]
   [string] $Owner,                      # continuous-delphi
 
@@ -177,16 +190,46 @@ param(
 
   [Parameter()]
   [ValidateSet('Todo','In progress','Done')]
-  [string] $StatusName = 'Todo',        # must match Status option exactly
-
-  # Prints all parameters and exits without making any changes.
-  # Use to verify inputs before a live run.
-  [Parameter()]
-  [switch] $DryRun
+  [string] $StatusName = 'Todo'         # must match Status option exactly
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+$ScriptVersion = '1.0.0'
+
+# -----------------------------------------------------------------------
+# Version: print version and exit
+# -----------------------------------------------------------------------
+if ($Version) {
+  Write-Host "cd-project-add-issue $ScriptVersion"
+  exit 0
+}
+
+# -----------------------------------------------------------------------
+# DryRun: print parameters and exit without making any changes
+# -----------------------------------------------------------------------
+if ($DryRun) {
+  Write-Host ""
+  Write-Host "DRY RUN -- no changes will be made." -ForegroundColor Cyan
+  Write-Host ""
+  Write-Host ("  {0,-14} {1}" -f "Owner:",         $Owner)
+  Write-Host ("  {0,-14} {1}" -f "ProjectNumber:", $ProjectNumber)
+  Write-Host ("  {0,-14} {1}" -f "Repo:",          $Repo)
+  Write-Host ("  {0,-14} {1}" -f "Title:",         $Title)
+  Write-Host ("  {0,-14} {1}" -f "Body:",          $(if ($Body) { $Body } else { '(none)' }))
+  Write-Host ("  {0,-14} {1}" -f "Labels:",        $(if ($Labels.Count -gt 0) { $Labels -join ', ' } else { '(none)' }))
+  Write-Host ("  {0,-14} {1}" -f "IssueType:",     $(if ($IssueType) { $IssueType } else { '(none)' }))
+  Write-Host ("  {0,-14} {1}" -f "CdMilestone:",   $CdMilestone)
+  Write-Host ("  {0,-14} {1}" -f "CdArea:",        $CdArea)
+  Write-Host ("  {0,-14} {1}" -f "CdPriority:",    $CdPriority)
+  Write-Host ("  {0,-14} {1}" -f "StartDate:",     $(if ($StartDate) { $StartDate } else { '(none)' }))
+  Write-Host ("  {0,-14} {1}" -f "TargetDate:",    $(if ($TargetDate) { $TargetDate } else { '(none)' }))
+  Write-Host ("  {0,-14} {1}" -f "QuarterTitle:",  $QuarterTitle)
+  Write-Host ("  {0,-14} {1}" -f "StatusName:",    $StatusName)
+  Write-Host ""
+  exit 0
+}
 
 function Assert-Gh {
   $null = Get-Command gh -ErrorAction Stop
@@ -330,6 +373,10 @@ query($owner:String!, $name:String!, $first:Int!) {
     first = 100
   }
 
+  if (-not $r.data -or -not $r.data.repository -or -not $r.data.repository.issueTypes) {
+    throw "issueTypes not found or GraphQL response invalid. Issue types may not be enabled for this repository."
+  }
+
   $nodes = $r.data.repository.issueTypes.nodes
   if (-not $nodes) {
     throw "No issue types returned. Issue types may not be enabled for this repository."
@@ -406,10 +453,11 @@ query($login:String!, $number:Int!) {
 
   $r = Invoke-GhGraphQL -Query $q -Variables @{ login = $Owner; number = $ProjectNumber }
 
-  $proj = $r.data.organization.projectV2
-  if (-not $proj) { throw "ProjectV2 not found for $Owner / #$ProjectNumber" }
+  if (-not $r.data -or -not $r.data.organization -or -not $r.data.organization.projectV2) {
+    throw "ProjectV2 not found or GraphQL response invalid for $Owner / #$ProjectNumber"
+  }
 
-  return $proj
+  return $r.data.organization.projectV2
 }
 
 function Add-IssueToProject {
@@ -566,31 +614,6 @@ mutation($projectId:ID!, $itemId:ID!, $fieldId:ID!, $iterationId:String!) {
     fieldId      = $FieldId
     iterationId  = $IterationId
   }
-}
-
-# -----------------------------------------------------------------------
-# DryRun: print parameters and exit without making any changes
-# -----------------------------------------------------------------------
-if ($DryRun) {
-  Write-Host ""
-  Write-Host "DRY RUN -- no changes will be made." -ForegroundColor Cyan
-  Write-Host ""
-  Write-Host ("  {0,-14} {1}" -f "Owner:",         $Owner)
-  Write-Host ("  {0,-14} {1}" -f "ProjectNumber:", $ProjectNumber)
-  Write-Host ("  {0,-14} {1}" -f "Repo:",          $Repo)
-  Write-Host ("  {0,-14} {1}" -f "Title:",         $Title)
-  Write-Host ("  {0,-14} {1}" -f "Body:",          $(if ($Body) { $Body } else { '(none)' }))
-  Write-Host ("  {0,-14} {1}" -f "Labels:",        $(if ($Labels.Count -gt 0) { $Labels -join ', ' } else { '(none)' }))
-  Write-Host ("  {0,-14} {1}" -f "IssueType:",     $(if ($IssueType) { $IssueType } else { '(none)' }))
-  Write-Host ("  {0,-14} {1}" -f "CdMilestone:",   $CdMilestone)
-  Write-Host ("  {0,-14} {1}" -f "CdArea:",        $CdArea)
-  Write-Host ("  {0,-14} {1}" -f "CdPriority:",    $CdPriority)
-  Write-Host ("  {0,-14} {1}" -f "StartDate:",     $(if ($StartDate) { $StartDate } else { '(none)' }))
-  Write-Host ("  {0,-14} {1}" -f "TargetDate:",    $(if ($TargetDate) { $TargetDate } else { '(none)' }))
-  Write-Host ("  {0,-14} {1}" -f "QuarterTitle:",  $QuarterTitle)
-  Write-Host ("  {0,-14} {1}" -f "StatusName:",    $StatusName)
-  Write-Host ""
-  exit 0
 }
 
 Assert-Gh
