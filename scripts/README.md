@@ -12,7 +12,29 @@ These scripts are intended to:
 -   Enforce repeatable governance operations
 
 These scripts are part of the Continuous-Delphi governance layer and
-should be treated as organizational infrastructure.
+should be treated as organizational infrastructure and are not intended
+as general-purpose GitHub automation utilities.
+
+------------------------------------------------------------------------
+
+## Stable Scripts
+- `cd-project-add-issue.ps1` (v1.0.0)
+  
+  Creates a GitHub issue and wires it into the Continuous-Delphi ProjectV2 roadmap with all required fields set.
+  
+  Capabilities:
+  - Issue creation
+  - Label assignment
+  - Issue Type assignment
+  - ProjectV2 board integration
+  - Status / Milestone / Area / Priority / Dates / Quarter automation
+  - Strict taxonomy validation
+  Status: Production (v1.0.0)
+   
+## Planned / Future Scripts
+- cd-project-report.ps1 (planned)
+- cd-project-bulk-create.ps1 (planned)
+- cd-project-link-dependencies.ps1 (planned)
 
 ------------------------------------------------------------------------
 
