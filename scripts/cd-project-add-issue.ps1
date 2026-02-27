@@ -85,6 +85,7 @@ function Invoke-GhGraphQL {
 
   foreach ($k in $Variables.Keys) {
     $v = $Variables[$k]
+    if ($null -eq $v) { continue }
 
     if ($null -eq $v) {
       continue
@@ -224,29 +225,17 @@ query($login:String!, $number:Int!) {
       fields(first: 50) {
         nodes {
           __typename
-          ... on ProjectV2FieldCommon {
-            id
-            name
-            dataType
-          }
+          ... on ProjectV2FieldCommon { id name dataType }
           ... on ProjectV2SingleSelectField {
             id
             name
-            options {
-              id
-              name
-            }
+            options { id name }
           }
           ... on ProjectV2IterationField {
             id
             name
             configuration {
-              iterations {
-                id
-                title
-                startDate
-                duration
-              }
+              iterations { id title startDate duration }
             }
           }
         }
@@ -282,32 +271,6 @@ mutation($projectId:ID!, $contentId:ID!) {
   $itemId = $r.data.addProjectV2ItemById.item.id
   if (-not $itemId) { throw "Failed to add issue to project (no item id returned)." }
   return $itemId
-}
-
-function Set-ProjectFieldValue {
-  param(
-    [Parameter(Mandatory)][string] $ProjectId,
-    [Parameter(Mandatory)][string] $ItemId,
-    [Parameter(Mandatory)][string] $FieldId,
-    [Parameter(Mandatory)][hashtable] $Value
-  )
-
-  $m = @'
-mutation($projectId:ID!, $itemId:ID!, $fieldId:ID!, $value:ProjectV2FieldValue!) {
-  updateProjectV2ItemFieldValue(
-    input:{projectId:$projectId, itemId:$itemId, fieldId:$fieldId, value:$value}
-  ) {
-    projectV2Item { id }
-  }
-}
-'@
-
-  $null = Invoke-GhGraphQL -Query $m -Variables @{
-    projectId = $ProjectId
-    itemId    = $ItemId
-    fieldId   = $FieldId
-    value     = $Value
-  }
 }
 
 function Get-FieldByName {
@@ -350,6 +313,102 @@ function Get-IterationIdByTitle {
   return $it.id
 }
 
+function Set-FieldSingleSelect {
+  param(
+    [Parameter(Mandatory)][string] $ProjectId,
+    [Parameter(Mandatory)][string] $ItemId,
+    [Parameter(Mandatory)][string] $FieldId,
+    [Parameter(Mandatory)][string] $OptionId
+  )
+
+  $m = @'
+mutation($projectId:ID!, $itemId:ID!, $fieldId:ID!, $optionId:String!) {
+  updateProjectV2ItemFieldValue(
+    input:{projectId:$projectId, itemId:$itemId, fieldId:$fieldId, value:{singleSelectOptionId:$optionId}}
+  ) { projectV2Item { id } }
+}
+'@
+
+  $null = Invoke-GhGraphQL -Query $m -Variables @{
+    projectId = $ProjectId
+    itemId    = $ItemId
+    fieldId   = $FieldId
+    optionId  = $OptionId
+  }
+}
+
+function Set-FieldText {
+  param(
+    [Parameter(Mandatory)][string] $ProjectId,
+    [Parameter(Mandatory)][string] $ItemId,
+    [Parameter(Mandatory)][string] $FieldId,
+    [Parameter(Mandatory)][string] $Text
+  )
+
+  $m = @'
+mutation($projectId:ID!, $itemId:ID!, $fieldId:ID!, $text:String!) {
+  updateProjectV2ItemFieldValue(
+    input:{projectId:$projectId, itemId:$itemId, fieldId:$fieldId, value:{text:$text}}
+  ) { projectV2Item { id } }
+}
+'@
+
+  $null = Invoke-GhGraphQL -Query $m -Variables @{
+    projectId = $ProjectId
+    itemId    = $ItemId
+    fieldId   = $FieldId
+    text      = $Text
+  }
+}
+
+function Set-FieldDate {
+  param(
+    [Parameter(Mandatory)][string] $ProjectId,
+    [Parameter(Mandatory)][string] $ItemId,
+    [Parameter(Mandatory)][string] $FieldId,
+    [Parameter(Mandatory)][string] $Date
+  )
+
+  $m = @'
+mutation($projectId:ID!, $itemId:ID!, $fieldId:ID!, $date:Date!) {
+  updateProjectV2ItemFieldValue(
+    input:{projectId:$projectId, itemId:$itemId, fieldId:$fieldId, value:{date:$date}}
+  ) { projectV2Item { id } }
+}
+'@
+
+  $null = Invoke-GhGraphQL -Query $m -Variables @{
+    projectId = $ProjectId
+    itemId    = $ItemId
+    fieldId   = $FieldId
+    date      = $Date
+  }
+}
+
+function Set-FieldIteration {
+  param(
+    [Parameter(Mandatory)][string] $ProjectId,
+    [Parameter(Mandatory)][string] $ItemId,
+    [Parameter(Mandatory)][string] $FieldId,
+    [Parameter(Mandatory)][string] $IterationId
+  )
+
+  $m = @'
+mutation($projectId:ID!, $itemId:ID!, $fieldId:ID!, $iterationId:String!) {
+  updateProjectV2ItemFieldValue(
+    input:{projectId:$projectId, itemId:$itemId, fieldId:$fieldId, value:{iterationId:$iterationId}}
+  ) { projectV2Item { id } }
+}
+'@
+
+  $null = Invoke-GhGraphQL -Query $m -Variables @{
+    projectId    = $ProjectId
+    itemId       = $ItemId
+    fieldId      = $FieldId
+    iterationId  = $IterationId
+  }
+}
+
 Assert-Gh
 
 # 1) Create the issue (repo metadata: title/body/labels)
@@ -384,30 +443,30 @@ $fQuarter     = Get-FieldByName -Project $proj -Name 'Quarter'
 
 # Status (single select)
 $stId = Get-SingleSelectOptionId -Field $fStatus -OptionName $StatusName
-Set-ProjectFieldValue -ProjectId $proj.id -ItemId $itemId -FieldId $fStatus.id -Value @{ singleSelectOptionId = $stId }
+Set-FieldSingleSelect -ProjectId $proj.id -ItemId $itemId -FieldId $fStatus.id -OptionId $stId
 
 # CD Milestone (text)
-Set-ProjectFieldValue -ProjectId $proj.id -ItemId $itemId -FieldId $fCdMilestone.id -Value @{ text = $CdMilestone }
+Set-FieldText -ProjectId $proj.id -ItemId $itemId -FieldId $fCdMilestone.id -Text $CdMilestone
 
 # CD Area (single select)
 $areaId = Get-SingleSelectOptionId -Field $fCdArea -OptionName $CdArea
-Set-ProjectFieldValue -ProjectId $proj.id -ItemId $itemId -FieldId $fCdArea.id -Value @{ singleSelectOptionId = $areaId }
+Set-FieldSingleSelect -ProjectId $proj.id -ItemId $itemId -FieldId $fCdArea.id -OptionId $areaId
 
 # CD Priority (single select)
 $prioId = Get-SingleSelectOptionId -Field $fCdPriority -OptionName $CdPriority
-Set-ProjectFieldValue -ProjectId $proj.id -ItemId $itemId -FieldId $fCdPriority.id -Value @{ singleSelectOptionId = $prioId }
+Set-FieldSingleSelect -ProjectId $proj.id -ItemId $itemId -FieldId $fCdPriority.id -OptionId $prioId
 
 # Start/Target dates (date)
 if (-not [string]::IsNullOrWhiteSpace($StartDate)) {
-  Set-ProjectFieldValue -ProjectId $proj.id -ItemId $itemId -FieldId $fStart.id -Value @{ date = $StartDate }
+  Set-FieldDate -ProjectId $proj.id -ItemId $itemId -FieldId $fStart.id -Date $StartDate
 }
 if (-not [string]::IsNullOrWhiteSpace($TargetDate)) {
-  Set-ProjectFieldValue -ProjectId $proj.id -ItemId $itemId -FieldId $fTarget.id -Value @{ date = $TargetDate }
+  Set-FieldDate -ProjectId $proj.id -ItemId $itemId -FieldId $fTarget.id -Date $TargetDate
 }
 
 # Quarter (iteration)
 $quarterIterId = Get-IterationIdByTitle -Field $fQuarter -Title $QuarterTitle
-Set-ProjectFieldValue -ProjectId $proj.id -ItemId $itemId -FieldId $fQuarter.id -Value @{ iterationId = $quarterIterId }
+Set-FieldIteration -ProjectId $proj.id -ItemId $itemId -FieldId $fQuarter.id -IterationId $quarterIterId
 
 Write-Host "Done."
 Write-Host "Issue: $($issue.Url)"
