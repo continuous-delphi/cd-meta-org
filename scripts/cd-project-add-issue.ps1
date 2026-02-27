@@ -16,6 +16,16 @@ param(
   [Parameter()]
   [string] $Body = '',
 
+  # Optional: repo labels to apply at issue creation time.
+  # Example: -Labels @('roadmap','standards')
+  [Parameter()]
+  [string[]] $Labels = @(),
+
+  # Optional: GitHub Issue Type (not a label). Example: -IssueType 'Epic'
+  # This is set via GraphQL after creation.
+  [Parameter()]
+  [string] $IssueType = '',
+
   [Parameter(Mandatory)]
   [string] $CdMilestone,                # "CD-M01"
 
@@ -97,21 +107,105 @@ function New-RepoIssue {
     [Parameter(Mandatory)][string] $Owner,
     [Parameter(Mandatory)][string] $Repo,
     [Parameter(Mandatory)][string] $Title,
-    [Parameter()][string] $Body
+    [Parameter()][string] $Body,
+    [Parameter()][string[]] $Labels
   )
 
-  $reqArgs = @('api', '-X', 'POST', "repos/$Owner/$Repo/issues", '-f', "title=$Title")
-  if (-not [string]::IsNullOrWhiteSpace($Body)) {
-    $reqArgs += @('-f', "body=$Body")
+  # Use JSON input to avoid quoting/escaping problems.
+  $payload = [ordered]@{
+    title = $Title
   }
 
-  $resp = Invoke-GhJson -GhArgs $reqArgs
+  if (-not [string]::IsNullOrWhiteSpace($Body)) {
+    $payload.body = $Body
+  }
+
+  if ($Labels -and $Labels.Count -gt 0) {
+    $payload.labels = $Labels
+  }
+
+  $jsonPath = Join-Path -Path $env:TEMP -ChildPath ("cd-new-issue-{0}.json" -f ([guid]::NewGuid().ToString('N')))
+  try {
+    ($payload | ConvertTo-Json -Depth 10) | Set-Content -LiteralPath $jsonPath -Encoding UTF8
+    $resp = Invoke-GhJson -GhArgs @('api', '-X', 'POST', "repos/$Owner/$Repo/issues", '--input', $jsonPath)
+  }
+  finally {
+    if (Test-Path -LiteralPath $jsonPath) {
+      Remove-Item -LiteralPath $jsonPath -Force -ErrorAction SilentlyContinue
+    }
+  }
+
   if (-not $resp.node_id) { throw "Issue creation succeeded but node_id was missing." }
 
   [pscustomobject]@{
     Number = $resp.number
     Url    = $resp.html_url
     NodeId = $resp.node_id
+  }
+}
+
+function Get-RepoIssueTypeIdByName {
+  param(
+    [Parameter(Mandatory)][string] $Owner,
+    [Parameter(Mandatory)][string] $Repo,
+    [Parameter(Mandatory)][string] $IssueTypeName
+  )
+
+  $q = @'
+query($owner:String!, $name:String!, $first:Int!) {
+  repository(owner: $owner, name: $name) {
+    issueTypes(first: $first) {
+      nodes {
+        id
+        name
+      }
+    }
+  }
+}
+'@
+
+  $r = Invoke-GhGraphQL -Query $q -Variables @{
+    owner = $Owner
+    name  = $Repo
+    first = 100
+  }
+
+  $nodes = $r.data.repository.issueTypes.nodes
+  if (-not $nodes) {
+    throw "No issue types returned. Issue types may not be enabled for this repository."
+  }
+
+  $match = $nodes | Where-Object { $_.name -eq $IssueTypeName } | Select-Object -First 1
+  if (-not $match) {
+    $names = ($nodes | ForEach-Object { $_.name }) -join ', '
+    throw "Issue type '$IssueTypeName' not found. Available: $names"
+  }
+
+  return $match.id
+}
+
+function Set-IssueType {
+  param(
+    [Parameter(Mandatory)][string] $IssueId,
+    [Parameter(Mandatory)][string] $IssueTypeId
+  )
+
+  $m = @'
+mutation($id:ID!, $issueTypeId:ID!) {
+  updateIssue(input: { id: $id, issueTypeId: $issueTypeId }) {
+    issue {
+      id
+      issueType {
+        name
+      }
+    }
+  }
+}
+'@
+
+  $null = Invoke-GhGraphQL -Query $m -Variables @{
+    id          = $IssueId
+    issueTypeId = $IssueTypeId
   }
 }
 
@@ -258,19 +352,26 @@ function Get-IterationIdByTitle {
 
 Assert-Gh
 
-# 1) Create the issue
-$issue = New-RepoIssue -Owner $Owner -Repo $Repo -Title $Title -Body $Body
+# 1) Create the issue (repo metadata: title/body/labels)
+$issue = New-RepoIssue -Owner $Owner -Repo $Repo -Title $Title -Body $Body -Labels $Labels
 Write-Host "Created issue: $($issue.Url)"
 
-# 2) Load project + fields
+# 2) Optional: set Issue Type (repo metadata)
+if (-not [string]::IsNullOrWhiteSpace($IssueType)) {
+  $issueTypeId = Get-RepoIssueTypeIdByName -Owner $Owner -Repo $Repo -IssueTypeName $IssueType
+  Set-IssueType -IssueId $issue.NodeId -IssueTypeId $issueTypeId
+  Write-Host "Set issue type: $IssueType"
+}
+
+# 3) Load project + fields
 $proj = Get-ProjectV2 -Owner $Owner -ProjectNumber $ProjectNumber
 Write-Host "Using project: $($proj.title) (#$ProjectNumber)"
 
-# 3) Add issue to project
+# 4) Add issue to project
 $itemId = Add-IssueToProject -ProjectId $proj.id -ContentNodeId $issue.NodeId
 Write-Host "Added to project item: $itemId"
 
-# 4) Resolve fields
+# 5) Resolve fields
 $fStatus      = Get-FieldByName -Project $proj -Name 'Status'
 $fCdMilestone = Get-FieldByName -Project $proj -Name 'CD Milestone'
 $fCdArea      = Get-FieldByName -Project $proj -Name 'CD Area'
@@ -279,7 +380,7 @@ $fStart       = Get-FieldByName -Project $proj -Name 'Start Date'
 $fTarget      = Get-FieldByName -Project $proj -Name 'Target Date'
 $fQuarter     = Get-FieldByName -Project $proj -Name 'Quarter'
 
-# 5) Set values
+# 6) Set project values
 
 # Status (single select)
 $stId = Get-SingleSelectOptionId -Field $fStatus -OptionName $StatusName
