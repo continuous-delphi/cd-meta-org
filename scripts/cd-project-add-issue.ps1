@@ -78,7 +78,25 @@ function Invoke-GhJson {
     [Parameter(Mandatory)][string[]] $GhArgs
   )
 
-  $out = & gh @GhArgs
+  $out    = $null
+  $errOut = $null
+
+  # Redirect stderr to a variable so it is included in any exception message.
+  # Without this, gh errors are swallowed and the caller only sees "no output".
+  $out = & gh @GhArgs 2>&1 | ForEach-Object {
+    if ($_ -is [System.Management.Automation.ErrorRecord]) {
+      $errOut += $_.ToString() + "`n"
+    } else {
+      $_
+    }
+  }
+
+  $out = ($out | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] }) -join "`n"
+
+  if (-not [string]::IsNullOrWhiteSpace($errOut)) {
+    throw "gh error for: gh $($GhArgs -join ' ')`n$errOut"
+  }
+
   if ([string]::IsNullOrWhiteSpace($out)) {
     throw "gh returned no output for: gh $($GhArgs -join ' ')"
   }
