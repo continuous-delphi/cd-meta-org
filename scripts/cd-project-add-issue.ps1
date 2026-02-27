@@ -27,13 +27,28 @@ param(
   [string] $IssueType = '',
 
   [Parameter(Mandatory)]
-  [string] $CdMilestone,                # "CD-M01"
+  [ValidatePattern('^CD-M\d{2,4}$')]
+  [string] $CdMilestone,                # "CD-M05"
 
   [Parameter(Mandatory)]
-  [string] $CdArea,                     # must match option name exactly
+  [ValidateSet(
+    'Governance',
+    'Standards',
+    'Documentation',
+    'CI',
+    'Specification',
+    'Tooling',
+    'Reference',
+    'Integration',
+    'Security',
+    'Packaging',
+    'Incubator'
+  )]
+  [string] $CdArea,                     # must match allowed values above
 
   [Parameter(Mandatory)]
-  [string] $CdPriority,                 # must match option name exactly
+  [ValidateSet('Strategic','High','Medium','Low')]
+  [string] $CdPriority,                 # must match allowed values above
 
   [Parameter()]
   [ValidatePattern('^\d{4}-\d{2}-\d{2}$')]
@@ -47,6 +62,7 @@ param(
   [string] $QuarterTitle = 'Quarter 1',  # must match iteration title exactly
 
   [Parameter()]
+  [ValidateSet('Todo','In progress','Done')]
   [string] $StatusName = 'Todo'          # must match Status option exactly
 )
 
