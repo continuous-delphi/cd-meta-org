@@ -101,7 +101,6 @@ function Invoke-GhGraphQL {
 
   foreach ($k in $Variables.Keys) {
     $v = $Variables[$k]
-    if ($null -eq $v) { continue }
 
     if ($null -eq $v) {
       continue
@@ -121,38 +120,45 @@ function Invoke-GhGraphQL {
 
 function New-RepoIssue {
   param(
-    [Parameter(Mandatory)][string] $Owner,
-    [Parameter(Mandatory)][string] $Repo,
-    [Parameter(Mandatory)][string] $Title,
-    [Parameter()][string] $Body,
-    [Parameter()][string[]] $Labels
+    [Parameter(Mandatory)][string]   $Owner,
+    [Parameter(Mandatory)][string]   $Repo,
+    [Parameter(Mandatory)][string]   $Title,
+    [Parameter()][string]            $Body   = '',
+    [Parameter()][string[]]          $Labels = @()
   )
 
-  # Use JSON input to avoid quoting/escaping problems.
-  $payload = [ordered]@{
-    title = $Title
-  }
+  $payload = [ordered]@{ title = $Title }
 
   if (-not [string]::IsNullOrWhiteSpace($Body)) {
     $payload.body = $Body
   }
 
-  if ($Labels -and $Labels.Count -gt 0) {
-    $payload.labels = $Labels
-  }
+  if ($Labels -and $Labels.Count -gt 0) { $payload.labels = $Labels }
 
-  $jsonPath = Join-Path -Path $env:TEMP -ChildPath ("cd-new-issue-{0}.json" -f ([guid]::NewGuid().ToString('N')))
+  # Write payload to a temp file to avoid shell quoting and escaping issues
+  # with titles/bodies that contain special characters.
+  # UTF-8 without BOM -- GitHub API returns HTTP 400 "Problems parsing JSON" if
+  # the payload contains a BOM. [System.Text.Encoding]::UTF8 includes a BOM on
+  # some .NET versions; UTF8Encoding($false) is always BOM-free.
+  $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+  $jsonPath  = Join-Path $env:TEMP ("cd-new-issue-{0}.json" -f [guid]::NewGuid().ToString('N'))
   try {
-    ($payload | ConvertTo-Json -Depth 10) | Set-Content -LiteralPath $jsonPath -Encoding UTF8
-    $resp = Invoke-GhJson -GhArgs @('api', '-X', 'POST', "repos/$Owner/$Repo/issues", '--input', $jsonPath)
+    $json = $payload | ConvertTo-Json -Depth 10
+    [System.IO.File]::WriteAllText($jsonPath, $json, $utf8NoBom)
+
+    $resp = Invoke-GhJson -GhArgs @(
+      'api', '-X', 'POST',
+      "repos/$Owner/$Repo/issues",
+      '--input', $jsonPath
+    )
   }
   finally {
-    if (Test-Path -LiteralPath $jsonPath) {
-      Remove-Item -LiteralPath $jsonPath -Force -ErrorAction SilentlyContinue
-    }
+    Remove-Item -LiteralPath $jsonPath -Force -ErrorAction SilentlyContinue
   }
 
-  if (-not $resp.node_id) { throw "Issue creation succeeded but node_id was missing." }
+  if (-not $resp.node_id) {
+    throw "Issue creation succeeded but node_id was missing from response."
+  }
 
   [pscustomobject]@{
     Number = $resp.number
