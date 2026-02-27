@@ -1,5 +1,101 @@
 #requires -Version 7.0
 
+<#
+.SYNOPSIS
+  Creates a GitHub issue and adds it to a ProjectV2 board with all fields set
+  
+.DESCRIPTION
+  Creates a new issue in the specified repository, optionally assigns labels
+  and an issue type, then adds the issue to the given GitHub ProjectV2 board
+  and sets the following project fields:
+
+    - Status          (single select)
+    - CD Milestone    (text)
+    - CD Area         (single select)
+    - CD Priority     (single select)
+    - Start Date      (date, optional)
+    - Target Date     (date, optional)
+    - Quarter         (iteration)
+
+  Requires the GitHub CLI (gh) to be installed and authenticated with
+  sufficient permissions to create issues and update project fields.
+
+  Field option values (Status, CD Area, CD Priority) must match the project's
+  configured option names exactly. Use -Verbose or inspect the project in the
+  GitHub UI if an option name is rejected.
+
+.PARAMETER Owner
+  The GitHub organization login. Example: continuous-delphi
+
+.PARAMETER ProjectNumber
+  The ProjectV2 number (as shown in the GitHub UI). Example: 1"
+
+.PARAMETER Repo
+  The repository name (without owner) where the issue will be created.
+  Example: cd-meta-org
+
+.PARAMETER Title
+  The issue title.
+
+.PARAMETER Body
+  Optional issue body text.
+
+.PARAMETER Labels
+  Optional array of label names to apply at creation time.
+  Example: -Labels @('roadmap', 'standards')
+
+.PARAMETER IssueType
+  Optional GitHub Issue Type to assign (e.g. 'Epic'). Set via GraphQL after
+  creation. Issue Types must be enabled for the repository.
+
+.PARAMETER CdMilestone
+  The Continuous Delphi milestone identifier. Must match pattern CD-M## (2-4 digits). Example: CD-M05
+  Example: CD-M05
+
+.PARAMETER CdArea
+  The project area. Must match one of the configured single-select options.
+  Example: Governance
+
+.PARAMETER CdPriority
+  The issue priority. Must be one of: Strategic, High, Medium, Low.
+
+.PARAMETER StartDate
+  Optional start date in YYYY-MM-DD format. Example: 2026-02-27
+
+.PARAMETER TargetDate
+  Optional target date in YYYY-MM-DD format. Example: 2026-03-31
+
+.PARAMETER QuarterTitle
+  The iteration title for the Quarter field. Must match the iteration name
+  exactly as configured in the project. Default: 'Quarter 1'
+
+.PARAMETER StatusName
+  The initial status. Must be one of: Todo, In progress, Done.
+  Default: Todo
+
+.EXAMPLE
+  ./cd-project-add-issue.ps1 `
+    -Owner continuous-delphi `
+    -ProjectNumber 1 `
+    -Repo cd-meta-org `
+    -Title "CD-M05: Specification and Reference" `
+    -Body "Establish canonical specifications and reference artifacts." `
+    -Labels @('roadmap') `
+    -IssueType "Epic" `
+    -CdMilestone "CD-M05" `
+    -CdArea "Specification" `
+    -CdPriority "Strategic" `
+    -StartDate "2026-02-27" `
+    -TargetDate "2026-03-31" `
+    -QuarterTitle "Quarter 1" `
+    -StatusName "Todo"
+
+.NOTES
+  Part of cd-meta-org (Continuous Delphi organization).
+  Requires: gh CLI authenticated with repo and project write permissions. 
+  gh auth refresh -s read:project,project
+#>
+
 param(
   [Parameter(Mandatory)]
   [string] $Owner,                      # continuous-delphi
