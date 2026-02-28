@@ -14,6 +14,9 @@ Most repositories below are planned and may not yet exist. This document defines
 
 ## Quick Links
 
+GitHub Projects
+  - [Continuous-Delphi Ecosystem Roadmap](https://github.com/orgs/continuous-delphi/projects/1)
+    
 Weekly Log entries
   - [Activity Logs](https://github.com/continuous-delphi/cd-meta-org/tree/main/logs/weekly)
     
