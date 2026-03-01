@@ -34,10 +34,10 @@ Standards and conventions repositories provide templates and shared configuratio
 
 CI and DevOps repositories provide toolchains, actions, and pipeline templates:
 - [cd-ci-toolchain](https://github.com/continuous-delphi/cd-ci-toolchain) - Delphi toolchain discovery and CI integration.
+- `cd-toolchain-test`
+- `cd-toolchain-build`
+- `cd-toolchain-deploy`
 - `cd-ci-examples`
-- `cd-ci-setup-delphi`
-- `cd-ci-build-delphi`
-- `cd-ci-run-dunitx`
 
 Tooling repositories provide developer tools and CLIs:
 - `cd-tool-radmake`
