@@ -11,9 +11,13 @@ Repositories are locatable by domain without relying on GitHub UI features. The 
 enforces disciplined incremental modernization and prevents the organization from degrading into
 an unstructured collection of loosely related projects.
 
-## Core naming rule
+## Repository naming conventions
 
-Every repository name follows the pattern:
+Repositories follow one of three naming conventions depending on their audience and purpose.
+
+### Org infrastructure repositories -- `cd-*`
+
+Repositories that exist to support the Continuous Delphi organization itself use the `cd-` prefix:
 
 ```
 cd-<domain>-<thing>
@@ -24,44 +28,90 @@ cd-<domain>-<thing>
 
 Examples:
 
-- `cd-ci-toolchain`
-- `cd-std-style-guide`
-- `cd-ref-vcl-clean-architecture`
+- `cd-meta-org`
+- `cd-doc-dev-setup`
+
+### Subject-matter repositories -- `delphi-*`
+
+Repositories whose primary audience is Delphi developers -- tooling, specs, libraries, and
+references -- use the `delphi-` prefix. The `continuous-delphi` org context already establishes
+the organizational namespace; the `delphi-` prefix makes every repo immediately self-describing
+to an outside reader without requiring familiarity with the `cd-` convention.
+
+```
+delphi-<domain>-<thing>
+```
+
+Examples:
+
+- `delphi-compiler-versions` -- canonical Delphi compiler version dataset and spec
+- `delphi-toolchain-inspect` -- version intelligence and installed compiler detection
+- `delphi-toolchain-test` -- DUnitX and automated test execution tooling
+
+### GitHub Actions marketplace repositories -- `action-delphi-*`
+
+Repositories published to the GitHub Actions marketplace use the `action-delphi-` prefix.
+This convention optimizes for marketplace discoverability while maintaining consistency with
+the `delphi-*` subject-matter naming. Each action repo is a thin wrapper around the
+corresponding toolchain repo -- business logic lives in the toolchain.
+
+```
+action-delphi-<thing>
+```
+
+Examples:
+
+- `action-delphi-inspect` -- marketplace action wrapping `delphi-toolchain-inspect`
+- `action-delphi-test` -- marketplace action wrapping `delphi-toolchain-test`
+
+### Summary
+
+| Audience / purpose                  | Convention            | Example                      |
+|-------------------------------------|-----------------------|------------------------------|
+| Org infrastructure and governance   | `cd-<domain>-<thing>` | `cd-meta-org`                |
+| Subject-matter (tooling, specs)     | `delphi-<domain>-<thing>` | `delphi-toolchain-inspect` |
+| GitHub Actions marketplace          | `action-delphi-<thing>` | `action-delphi-inspect`    |
 
 ## Domain prefixes
 
-The domain list is small and stable by design. Almost every repository fits one of these prefixes.
-New domains require deliberate justification — see [When a repository does not fit any domain](#when-a-repository-does-not-fit-any-domain).
+### `cd-*` domain prefixes
+
+The domain list is small and stable by design. New domains require deliberate
+justification -- see [When a repository does not fit any domain](#when-a-repository-does-not-fit-any-domain).
 
 | Prefix       | Purpose                                                        |
 |--------------|----------------------------------------------------------------|
 | `cd-meta-*`  | Org navigation, governance, policies, indices                  |
 | `cd-doc-*`   | Long-form documentation, guides, playbooks                     |
-| `cd-std-*`   | Standards, templates, conventions                              |
-| `cd-ci-*`    | CI tooling, GitHub Actions, CI templates, examples             |
-| `cd-tool-*`  | Developer tools, CLIs, IDE plugins, utilities                  |
-| `cd-lib-*`   | Reusable libraries intended for inclusion in projects          |
-| `cd-ref-*`   | Reference implementations and canonical examples               |
-| `cd-spec-*`  | Formal specifications, schemas, file formats                   |
-| `cd-int-*`   | Integrations (SonarQube, Sigrid, Slack, etc.)                  |
-| `cd-sec-*`   | Security, SBOM, signing, compliance                            |
-| `cd-pkg-*`   | Packaging and distribution (GetIt, winget, choco)              |
-| `cd-x-*`     | Incubator / prototypes — graduate to a stable domain later     |
+
+### `delphi-*` domain segments
+
+| Segment            | Purpose                                                   |
+|--------------------|-----------------------------------------------------------|
+| `delphi-spec-*`    | Formal specifications, schemas, file formats              |
+| `delphi-toolchain-*` | Developer tooling, CLIs, build and inspection scripts   |
+| `delphi-lib-*`     | Reusable libraries intended for inclusion in projects     |
+| `delphi-ref-*`     | Reference implementations and canonical examples          |
+| `delphi-std-*`     | Standards, templates, conventions                         |
+| `delphi-int-*`     | Integrations (SonarQube, Sigrid, Slack, etc.)             |
+| `delphi-sec-*`     | Security, SBOM, signing, compliance                       |
+| `delphi-pkg-*`     | Packaging and distribution (GetIt, winget, choco)         |
+| `delphi-x-*`       | Incubator / prototypes -- graduate to a stable domain later |
 
 ### Naming guidance
 
-The `<thing>` segment uses verbs for CI and action repositories (`setup`, `build`, `run`, `test`,
-`package`) and nouns for library repositories (`logging`, `http`, `json`, `threading`). Reference
-repositories use descriptive noun phrases identifying the architecture or pattern:
+The `<thing>` segment uses verbs for action repositories (`inspect`, `test`, `build`, `run`,
+`package`) and nouns for library repositories (`logging`, `http`, `json`, `threading`).
+Reference repositories use descriptive noun phrases identifying the architecture or pattern:
 `vcl-clean-architecture`, `dunitx-ci`.
 
 A repository with no stable release tag, or one still expected to introduce breaking changes,
-belongs under `cd-x-*`. When in doubt, use `cd-x-*`.
+belongs under `*-x-*`. When in doubt, use the incubator domain.
 
 ## Topics
 
 Topics are a secondary navigation layer that improves filtering and discovery. They do not replace
-prefixes — a repository must be understandable by name alone.
+prefixes -- a repository must be understandable by name alone.
 
 ### Mandatory topics (every repository)
 
@@ -70,22 +120,22 @@ prefixes — a repository must be understandable by name alone.
 
 ### Domain topic (exactly one per repository)
 
-| Prefix       | Topic           |
-|--------------|-----------------|
-| `cd-meta-*`  | `meta`          |
-| `cd-doc-*`   | `documentation` |
-| `cd-std-*`   | `standards`     |
-| `cd-ci-*`    | `ci`            |
-| `cd-tool-*`  | `tooling`       |
-| `cd-lib-*`   | `library`       |
-| `cd-ref-*`   | `reference`     |
-| `cd-spec-*`  | `spec`          |
-| `cd-int-*`   | `integration`   |
-| `cd-sec-*`   | `security`      |
-| `cd-pkg-*`   | `packaging`     |
-| `cd-x-*`     | `incubator`     |
+| Prefix / segment       | Topic           |
+|------------------------|-----------------|
+| `cd-meta-*`            | `meta`          |
+| `cd-doc-*`             | `documentation` |
+| `delphi-spec-*`        | `spec`          |
+| `delphi-toolchain-*`   | `tooling`       |
+| `delphi-lib-*`         | `library`       |
+| `delphi-ref-*`         | `reference`     |
+| `delphi-std-*`         | `standards`     |
+| `delphi-int-*`         | `integration`   |
+| `delphi-sec-*`         | `security`      |
+| `delphi-pkg-*`         | `packaging`     |
+| `delphi-x-*`           | `incubator`     |
+| `action-delphi-*`      | `github-actions` |
 
-### Platform and technology topics (0–5 per repository)
+### Platform and technology topics (0-5 per repository)
 
 Add topics reflecting the technologies or platforms the repository targets. Examples:
 `github-actions`, `gitlab`, `jenkins`, `msbuild`, `dunitx`, `vcl`, `fmx`, `windows`.
@@ -99,30 +149,30 @@ Every repository carries exactly one of: `incubator`, `stable`, `deprecated`.
 Every repository description begins with a bracketed domain marker, keeping the organization
 list scannable without opening individual repositories.
 
-| Domain       | Tag      |
-|--------------|----------|
-| `cd-meta-*`  | `[META]` |
-| `cd-doc-*`   | `[DOC]`  |
-| `cd-std-*`   | `[STD]`  |
-| `cd-ci-*`    | `[CI]`   |
-| `cd-tool-*`  | `[TOOL]` |
-| `cd-lib-*`   | `[LIB]`  |
-| `cd-ref-*`   | `[REF]`  |
-| `cd-spec-*`  | `[SPEC]` |
-| `cd-int-*`   | `[INT]`  |
-| `cd-sec-*`   | `[SEC]`  |
-| `cd-pkg-*`   | `[PKG]`  |
-| `cd-x-*`     | `[X]`    |
+| Prefix / segment       | Tag        |
+|------------------------|------------|
+| `cd-meta-*`            | `[META]`   |
+| `cd-doc-*`             | `[DOC]`    |
+| `delphi-spec-*`        | `[SPEC]`   |
+| `delphi-toolchain-*`   | `[TOOL]`   |
+| `delphi-lib-*`         | `[LIB]`    |
+| `delphi-ref-*`         | `[REF]`    |
+| `delphi-std-*`         | `[STD]`    |
+| `delphi-int-*`         | `[INT]`    |
+| `delphi-sec-*`         | `[SEC]`    |
+| `delphi-pkg-*`         | `[PKG]`    |
+| `delphi-x-*`           | `[X]`      |
+| `action-delphi-*`      | `[ACTION]` |
 
 Example:
 
 ```
-[CI] Delphi toolchain discovery and MSBuild wrapper for deterministic CI builds.
+[TOOL] Inspect installed Delphi compiler versions and resolve aliases for CI pipelines.
 ```
 
 ## Archiving and deprecation
 
-Experimental work lives in `cd-x-*`. When a prototype is abandoned or superseded:
+Experimental work lives in `*-x-*`. When a prototype is abandoned or superseded:
 
 1. Set its maturity topic to `deprecated`.
 2. Archive the repository on GitHub.
@@ -132,15 +182,15 @@ Do not delete repositories. Preserve history and context.
 
 ## CI vendor adapters
 
-GitHub Actions repositories use the `cd-ci-*` prefix. Other CI systems require dedicated adapter
-repositories and must not use "actions" in their names:
+GitHub Actions repositories follow the `action-delphi-*` convention and are published to the
+GitHub Actions marketplace. Other CI systems require dedicated adapter repositories:
 
-- `cd-ci-gitlab-templates` — GitLab includes and templates
-- `cd-ci-jenkins-library` — Jenkins Shared Library (Groovy)
-- `cd-ci-azure-pipelines` — Azure Pipelines templates and examples
+- `delphi-ci-gitlab-templates` -- GitLab includes and templates
+- `delphi-ci-jenkins-library` -- Jenkins Shared Library (Groovy)
+- `delphi-ci-azure-pipelines` -- Azure Pipelines templates and examples
 
-All CI adapters depend on `cd-ci-toolchain` as the shared core. Toolchain discovery and MSBuild
-invocation logic is not duplicated across adapters.
+All CI adapters depend on the appropriate `delphi-toolchain-*` repository as the shared core.
+Toolchain discovery and build invocation logic is not duplicated across adapters.
 
 ## Versioning
 
@@ -155,11 +205,16 @@ necessary, bump the major version and document the migration path in the release
 
 Before creating a repository, confirm:
 
-- [ ] Name follows `cd-<domain>-<thing>` with a valid domain prefix.
-- [ ] Topics include `continuous-delphi`, `delphi` (if applicable), one domain topic, and one maturity topic.
+- [ ] Name follows the correct convention for its audience:
+  - Org infrastructure: `cd-<domain>-<thing>`
+  - Subject-matter: `delphi-<domain>-<thing>`
+  - GitHub Actions marketplace: `action-delphi-<thing>`
+- [ ] Topics include `continuous-delphi`, `delphi` (if applicable), one domain topic, and one
+      maturity topic.
 - [ ] Description begins with the correct `[DOMAIN]` tag.
 - [ ] README links back to `cd-meta-org` under a "Part of Continuous Delphi" section.
-- [ ] Repository is under `cd-x-*` if it has no stable release tag or expects breaking changes.
+- [ ] Repository uses the `*-x-*` incubator domain if it has no stable release tag or expects
+      breaking changes.
 
 ## Repository structure conventions
 
@@ -187,7 +242,7 @@ If a repository contains submodules, they must be located under a
 directly in root. Why? Because the presence of `submodules/` serves as
 an explicit visual signal to contributors that the repository has external
 dependencies and its contents provide an immediate inventory of those
-dependencies (without having to parse the `.gitmodules` file)
+dependencies (without having to parse the `.gitmodules` file).
 
 Try to limit the number of submodules to the minimum necessary.
 
@@ -195,36 +250,40 @@ Try to limit the number of submodules to the minimum necessary.
 
 If a repository does not clearly belong to an existing domain:
 
-1. Place it temporarily under `cd-x-*`.
+1. Place it temporarily under the appropriate `*-x-*` incubator domain.
 2. Open a discussion issue in `cd-meta-org` describing the proposed scope.
-3. Reach maintainer consensus before introducing a new domain prefix.
+3. Reach maintainer consensus before introducing a new domain segment.
 
-New domain prefixes are rare by design. The prefix list must remain stable and memorable.
+New domain segments are rare by design. The segment list must remain stable and memorable.
 
 ## Future evolution
 
 Expand curated indices in `cd-meta-org` as the organization grows rather than relying on GitHub
-organization page discovery. Domain prefixes change only with deliberate maintainer agreement.
-Successful `cd-x-*` projects graduate into stable domains — the incubator is not a permanent home.
+organization page discovery. Domain segments change only with deliberate maintainer agreement.
+Successful `*-x-*` projects graduate into stable domains -- the incubator is not a permanent home.
 
 ## Entity and schema naming
 
-All `cd-spec-*` repositories MUST follow a consistent, org-wide convention for JSON schema and data modeling.
-This prevents drift between specifications and ensures long-term interoperability across tooling, generators, and consumers.
+All specification and tooling repositories MUST follow a consistent, org-wide convention for
+JSON schema and data modeling. This prevents drift between specifications and ensures long-term
+interoperability across tooling, generators, and consumers.
 
 ### JSON property naming
 
 - All JSON keys MUST use lowerCamelCase.
 - Underscores (`snake_case`) MUST NOT be used in JSON keys.
-- Acronyms are treated as words (for example: `utcDate`, `bdsRegVersion`, not `UTCDate` or `bds_reg_version`).
-- Property names SHOULD use clear, descriptive terms over abbreviations unless the abbreviation is domain-standard
-- Arrays MUST be used for collections (for example: aliases: []).
+- Acronyms are treated as words (for example: `utcDate`, `bdsRegVersion`, not `UTCDate` or
+  `bds_reg_version`).
+- Property names SHOULD use clear, descriptive terms over abbreviations unless the abbreviation
+  is domain-standard.
+- Arrays MUST be used for collections (for example: `aliases: []`).
 
 ### Schema consistency
 
 - JSON Schema property names MUST match the exact casing used in the corresponding data files.
-- `$id` values MUST uniquely identify the file’s canonical URL.
-- Versioned schemas (for example: schemas/1.0.0/...) MUST NOT share the same `$id` as unversioned “latest” schemas.
+- `$id` values MUST uniquely identify the file's canonical URL.
+- Versioned schemas (for example: `schemas/1.0.0/...`) MUST NOT share the same `$id` as
+  unversioned "latest" schemas.
 - Schema versions MUST follow semantic versioning.
 - Breaking changes to property names or structure REQUIRE a schema version bump.
 
@@ -233,13 +292,15 @@ This prevents drift between specifications and ensures long-term interoperabilit
 - Dates MUST use ISO-8601 format.
 - UTC timestamps SHOULD be explicit (for example: `2026-02-28T00:00:00Z`).
 - Numeric values SHOULD be stored as numbers unless the value is an identifier
-(for example: version strings like `"35.0"` may remain strings).
+  (for example: version strings like `"35.0"` may remain strings).
 
 ### Stability expectations
 
-- Entity naming decisions are considered architectural.
-Once a spec leaves incubator status, property names are treated as stable API surface.
-- Spec repositories MUST NOT introduce mixed naming styles within the same schema.
-- Any naming convention changes require explicit documentation in the changelog and appropriate version increments.
+- Entity naming decisions are considered architectural. Once a repository leaves incubator
+  status, property names are treated as stable API surface.
+- Repositories MUST NOT introduce mixed naming styles within the same schema.
+- Any naming convention changes require explicit documentation in the changelog and appropriate
+  version increments.
 
-This standard applies to all `cd-spec-*` repositories and any future specification projects within the Continuous Delphi organization.
+This standard applies to all specification and tooling repositories within the Continuous
+Delphi organization.
