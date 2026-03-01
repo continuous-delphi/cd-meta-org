@@ -27,72 +27,53 @@ Documentation and guidance repositories provide long-form guides and playbooks:
 - `cd-doc-ci-guide`
 
 Standards and conventions repositories provide templates and shared configuration:
-- `cd-std-style-guide`
 - `cd-std-repo-template`
-- `cd-std-gitattributes`
-- `cd-std-editorconfig`
+- `delphi-std-style-guide`
+- `delphi-std-gitattributes`
+- `delphi-std-editorconfig`
 
 CI and DevOps repositories provide toolchains, actions, and pipeline templates:
-- [cd-ci-toolchain](https://github.com/continuous-delphi/cd-ci-toolchain) - Delphi toolchain discovery and CI integration.
-- `cd-toolchain-test`
-- `cd-toolchain-build`
-- `cd-toolchain-deploy`
-- `cd-ci-examples`
+- [delphi-toolchain-inspect](https://github.com/continuous-delphi/delphi-toolchain-inspect) - Delphi toolchain discovery and CI integration.
+- `delphi-toolchain-test`
+- `delphi-toolchain-build`
+- `delphi-toolchain-deploy`
+- `delphi-ci-examples`
 
 Tooling repositories provide developer tools and CLIs:
-- `cd-tool-radmake`
-- `cd-tool-radfmt`
-- `cd-tool-radlinter`
-- `cd-tool-badges`
+- `delphi-tool-pasfmt`
+- `delphi-tool-linter`
+- `delphi-tool-badges`
 
 Library repositories provide reusable Delphi packages:
-- `cd-lib-logging`
-- `cd-lib-http`
-- `cd-lib-json`
+- `delphi-lib-logging`
+- `delphi-lib-http`
+- `delphi-lib-json`
 
 Reference implementation repositories demonstrate patterns and architecture:
-- `cd-ref-dunitx-ci`
-- `cd-ref-vcl-clean-architecture`
-- `cd-ref-layered-monolith`
+- `delphi-ref-dunitx-ci`
+- `delphi-ref-vcl-clean-architecture`
+- `delphi-ref-layered-monolith`
 
 Specification repositories provide formal schemas and layout definitions:
-- [cd-spec-delphi-compiler-versions](https://github.com/continuous-delphi/cd-spec-delphi-compiler-versions) - Canonical Delphi VER### mapping data (Delphi 2+) with aliases and toolchain metadata.
-- `cd-spec-project-layout`
-- `cd-spec-build-metadata`
+https://github.com/continuous-delphi/delphi-compiler-versions
+- (delphi-compiler-versions)[https://github.com/continuous-delphi/delphi-compiler-versions) - Canonical Delphi VER### mapping data (Delphi 2+) with aliases and toolchain metadata.
+- `delphi-project-layout`
+- `delphi-build-metadata`
 
 Integration repositories connect Continuous Delphi tooling to third-party platforms:
-- `cd-int-sonarqube`
-- `cd-int-sigrid`
+- `delphi-int-sonarqube`
+- `delphi-int-sigrid`
 
 Security and compliance repositories cover SBOM, signing, and auditing:
-- `cd-sec-sbom`
-- `cd-sec-signing`
+- `delphi-sec-sbom`
+- `delphi-sec-signing`
 
 Packaging and distribution repositories support delivery to end users:
-- `cd-pkg-getit-ready`
-- `cd-pkg-winget`
-- `cd-pkg-choco`
+- `delphi-pkg-getit-ready`
+- `delphi-pkg-winget`
+- `delphi-pkg-choco`
 
 Incubator repositories are experimental prototypes using the `cd-x-*` prefix and are not considered stable.
-
-## Organization naming taxonomy
-
-This structure exists to prevent organizational entropy as the repository count grows.
-
-| Prefix | Purpose |
-|---|---|
-| `cd-meta-*` | Org navigation and governance |
-| `cd-doc-*` | Long-form guides and playbooks |
-| `cd-std-*` | Standards and templates |
-| `cd-ci-*` | CI tooling, actions, templates, examples |
-| `cd-tool-*` | Developer tools and CLIs |
-| `cd-lib-*` | Reusable Delphi libraries |
-| `cd-ref-*` | Reference applications and patterns |
-| `cd-spec-*` | Formal specs and schemas |
-| `cd-int-*` | Third-party integrations |
-| `cd-sec-*` | Security, SBOM, signing, compliance |
-| `cd-pkg-*` | Packaging and distribution |
-| `cd-x-*` | Incubator and prototypes |
 
 For full details on topics, maturity labels, and pinning strategy, see [docs/org-taxonomy.md](docs/org-taxonomy.md).
 
