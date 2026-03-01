@@ -55,8 +55,7 @@ Reference implementation repositories demonstrate patterns and architecture:
 - `delphi-ref-layered-monolith`
 
 Specification repositories provide formal schemas and layout definitions:
-https://github.com/continuous-delphi/delphi-compiler-versions
-- (delphi-compiler-versions)[https://github.com/continuous-delphi/delphi-compiler-versions) - Canonical Delphi VER### mapping data (Delphi 2+) with aliases and toolchain metadata.
+- [delphi-compiler-versions](https://github.com/continuous-delphi/delphi-compiler-versions) - Canonical Delphi VER### mapping data (Delphi 2+) with aliases and toolchain metadata.
 - `delphi-project-layout`
 - `delphi-build-metadata`
 
