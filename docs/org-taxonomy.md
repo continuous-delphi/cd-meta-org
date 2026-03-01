@@ -206,3 +206,40 @@ New domain prefixes are rare by design. The prefix list must remain stable and m
 Expand curated indices in `cd-meta-org` as the organization grows rather than relying on GitHub
 organization page discovery. Domain prefixes change only with deliberate maintainer agreement.
 Successful `cd-x-*` projects graduate into stable domains — the incubator is not a permanent home.
+
+## Entity and schema naming
+
+All `cd-spec-*` repositories MUST follow a consistent, org-wide convention for JSON schema and data modeling.
+This prevents drift between specifications and ensures long-term interoperability across tooling, generators, and consumers.
+
+### JSON property naming
+
+- All JSON keys MUST use lowerCamelCase.
+- Underscores (`snake_case`) MUST NOT be used in JSON keys.
+- Acronyms are treated as words (for example: `utcDate`, `bdsRegVersion`, not `UTCDate` or `bds_reg_version`).
+- Property names SHOULD use clear, descriptive terms over abbreviations unless the abbreviation is domain-standard
+- Arrays MUST be used for collections (for example: aliases: []).
+
+### Schema consistency
+
+- JSON Schema property names MUST match the exact casing used in the corresponding data files.
+- `$id` values MUST uniquely identify the file’s canonical URL.
+- Versioned schemas (for example: schemas/1.0.0/...) MUST NOT share the same `$id` as unversioned “latest” schemas.
+- Schema versions MUST follow semantic versioning.
+- Breaking changes to property names or structure REQUIRE a schema version bump.
+
+### Data semantics
+
+- Dates MUST use ISO-8601 format.
+- UTC timestamps SHOULD be explicit (for example: `2026-02-28T00:00:00Z`).
+- Numeric values SHOULD be stored as numbers unless the value is an identifier
+(for example: version strings like `"35.0"` may remain strings).
+
+### Stability expectations
+
+- Entity naming decisions are considered architectural.
+Once a spec leaves incubator status, property names are treated as stable API surface.
+- Spec repositories MUST NOT introduce mixed naming styles within the same schema.
+- Any naming convention changes require explicit documentation in the changelog and appropriate version increments.
+
+This standard applies to all `cd-spec-*` repositories and any future specification projects within the Continuous Delphi organization.
