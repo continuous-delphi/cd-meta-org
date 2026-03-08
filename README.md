@@ -37,9 +37,9 @@ CI and DevOps repositories provide toolchains, actions, and pipeline templates:
 - `delphi-toolchain-test`
 - `delphi-toolchain-build`
 - `delphi-toolchain-deploy`
-- `delphi-ci-examples`
 
 Tooling repositories provide developer tools and CLIs:
+- [cd-tool-pwsh](https://github.com/continuous-delphi/cd-tool-pwsh) - PowerShell utilities
 - `delphi-tool-pasfmt`
 - `delphi-tool-linter`
 - `delphi-tool-badges`
