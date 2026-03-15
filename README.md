@@ -33,9 +33,9 @@ Standards and conventions repositories provide templates and shared configuratio
 - `delphi-std-editorconfig`
 
 CI and DevOps repositories provide toolchains, actions, and pipeline templates:
-- [delphi-toolchain-inspect](https://github.com/continuous-delphi/delphi-toolchain-inspect) - Delphi toolchain discovery and CI integration.
-- `delphi-toolchain-test`
-- `delphi-toolchain-build`
+- [delphi-inspect](https://github.com/continuous-delphi/delphi-inspect) - Delphi toolchain discovery and CI integration.
+- `delphi-build`
+- `delphi-test`
 - `delphi-toolchain-deploy`
 
 Tooling repositories provide developer tools and CLIs:
