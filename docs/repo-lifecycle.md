@@ -92,3 +92,22 @@ Lifecycle state is authoritative. Downstream consumers rely on it when making de
 decisions. Repositories must not be labeled `stable` prematurely.
 
 Incubator is temporary. Deprecated is final. Stable is a commitment.
+
+## 7. Custom settings after new repo created
+
+Repositories typically use the GitHub defaults, with some exceptions:
+
+```text
+General settings
+
++ Social preview image
+- Wikis
+- Projects
+- Allow merge commits
+- Allow rebase merging
++ Always suggest updating pull request branches 
+
+Actions->General Settings
++ Allow continuous-delphi actions and select...
+  + Allow actions created by GitHub
+```

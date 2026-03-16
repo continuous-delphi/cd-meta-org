@@ -15,11 +15,14 @@ domain prefix prematurely.
 
 ## 2. Naming rules
 
-Every repository name follows the pattern:
+Organization-related repository names follow the pattern:
 
-```
+```text
 cd-<domain>-<thing>
 ```
+
+Subject-matter repositories for Delphi use `delphi-xxx`
+
 
 ### Approved domains
 
@@ -144,7 +147,7 @@ When a repository is superseded:
 
 Do not delete repositories. Preserve history and context.
 
-## 9. Final check — before clicking "Create Repository"
+## 9. Final check - before clicking "Create Repository"
 
 - [ ] Name follows `cd-<domain>-<thing>` with an approved domain prefix.
 - [ ] Description begins with the correct `[DOMAIN]` tag.
