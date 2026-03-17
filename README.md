@@ -38,6 +38,7 @@ CI and DevOps repositories provide toolchains, actions, and pipeline templates:
 - [delphi-dccbuild](https://github.com/continuous-delphi/delphi-dccbuild) - builds Delphi .dproj projects using the DCCxxx command line compiler.
 - `delphi-test`
 - `delphi-toolchain-deploy`
+- `delphi-incver`
 
 Tooling repositories provide developer tools and CLIs:
 - [cd-tool-pwsh](https://github.com/continuous-delphi/cd-tool-pwsh) - PowerShell utilities
