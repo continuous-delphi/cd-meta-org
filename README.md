@@ -34,7 +34,8 @@ Standards and conventions repositories provide templates and shared configuratio
 
 CI and DevOps repositories provide toolchains, actions, and pipeline templates:
 - [delphi-inspect](https://github.com/continuous-delphi/delphi-inspect) - Delphi toolchain discovery and CI integration.
-- `delphi-build`
+- [delphi-msbuild](https://github.com/continuous-delphi/delphi-msbuild) - Builds Delphi .dproj projects using MSBuild from the command line.
+- [delphi-dccbuild](https://github.com/continuous-delphi/delphi-dccbuild) - builds Delphi .dproj projects using the DCCxxx command line compiler.
 - `delphi-test`
 - `delphi-toolchain-deploy`
 
