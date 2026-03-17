@@ -111,3 +111,78 @@ Actions->General Settings
 + Allow continuous-delphi actions and select...
   + Allow actions created by GitHub
 ```
+
+## 8. README.md header
+
+Example layout below.
+- Every tool should have a custom logo
+- Followed by badges:
+  - CI pass/fail badge
+  - Current repo status (incubator, stable, deprecated)
+  - License (typically MIT)
+  - Delphi red badge
+  - Last badge is a red "Continuous-Delphi"
+
+```md
+# delphi-dccbuild.ps1 
+
+![delphi-dccbuild logo](https://continuous-delphi.github.io/assets/logos/delphi-dccbuild-480x270.png)
+
+[![CI](https://github.com/continuous-delphi/delphi-dccbuild/actions/workflows/ci.yml/badge.svg)](https://github.com/continuous-delphi/delphi-dccbuild/actions/workflows/ci.yml)
+![Status](https://img.shields.io/badge/status-incubator-orange)
+![License](https://img.shields.io/github/license/continuous-delphi/delphi-inspect.svg)
+![Delphi](https://img.shields.io/badge/delphi-red)
+![PowerShell](https://img.shields.io/badge/powershell-7.4%2B-blue)
+![Continuous Delphi](https://img.shields.io/badge/org-continuous--delphi-red)
+```
+
+## 9. README.md maturity footer
+
+Standard footer for incubator status repos:
+
+
+```md
+## Maturity
+
+This repository is currently `incubator`. It will graduate to `stable` once:
+
+- At least one downstream consumer exists.
+- + Other requirements specific to repo
+
+Until graduation, breaking changes may occur
+
+![continuous-delphi logo](https://continuous-delphi.github.io/assets/logos/continuous-delphi-480x270.png)
+```
+
+## 10. README.md Continuous-Delphi footer
+
+```md
+## Part of the Continuous Delphi Organization
+
+This repository follows the Continuous Delphi organization taxonomy. See
+[cd-meta-org](https://github.com/continuous-delphi/cd-meta-org) for navigation and governance.
+
+- `docs/org-taxonomy.md` -- naming and tagging conventions
+- `docs/versioning-policy.md` -- release and versioning rules
+- `docs/repo-lifecycle.md` -- lifecycle states and graduation criteria
+```
+
+## 11. Workflows defined
+
+Most repos should have a `.github/workflows/ci.yml` defined that is triggered on pushes
+to main, on pull-requests, and be able to be manually triggered with a header similar
+to:
+
+
+```yml
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - "**"
+  workflow_dispatch:
+```
