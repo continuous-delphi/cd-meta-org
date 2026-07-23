@@ -17,9 +17,6 @@ Most repositories below are planned and may not yet exist. This document defines
 GitHub Projects
   - [Continuous-Delphi Ecosystem Roadmap](https://github.com/orgs/continuous-delphi/projects/1)
     
-Weekly Log entries
-  - [Activity Logs](https://github.com/continuous-delphi/cd-meta-org/tree/main/logs/weekly)
-    
 Documentation and guidance repositories provide long-form guides and playbooks:
 - [cd-doc-dev-setup](https://github.com/continuous-delphi/cd-doc-dev-setup) - Development environment setup guides for the Continuous Delphi organization.
 - `cd-doc-playbook`
